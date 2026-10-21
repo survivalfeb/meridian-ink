@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>经纬与字 · Meridian &amp; Ink</title>
+<meta name="description" content="写作、旅行与欣赏。" />
+<style>
+/* =====================================================
+   经纬与字
+   ===================================================== */
+
+/* ---------- 主题变量 ---------- */
+:root{
+  --ink-900:#0A0A0A; --ink-800:#1F1F1F; --ink-500:#6B6B6B;
+  --ink-200:#E5E5E5; --ink-50:#FAFAFA;
+  --accent-teal:#14B8A6; --accent-sky:#0EA5E9;
+  --accent-mint:#99F6E4; --accent-deep:#0F766E;
+
+  --bg:var(--ink-50); --fg:var(--ink-900);
+  --muted:var(--ink-500); --line:var(--ink-200);
+  --marker:var(--accent-teal); --link:var(--accent-deep);
+/* 居民楼：白天米白 + 暖黄 */
+--building-sky-from:#f8f3ea;
+--building-sky-to:#ece3d2;
+--building-glow:rgba(255,200,140,.28);
+--building-body-from:#f5f0e6;
+--building-body-to:#e0d6c3;
+--building-border:rgba(0,0,0,.08);
+--building-side:#d8ccb6;
+--building-top:#efe7d6;
+--window-off:#d8cfbc;
+--window-off-border:rgba(0,0,0,.06);
+--window-on-from:#fff4d4;
+--window-on-mid:#ffd88a;
+--window-on-to:#ff9f43;
+--window-on-border:rgba(255,180,77,.9);
+--window-on-glow:rgba(255,180,77,.7);
+--window-on-glow-outer:rgba(255,140,26,.35);
+--ground-glow:rgba(255,200,120,.35);
+--building-text:#2a2520;
+--building-text-muted:#7a7266;
+  /* 地图（浅色）*/
+  --province-off:#E5E5E5;
+  --province-off-stroke:#c9c9c9;
+  --province-on:#14B8A6;
+  --province-on-stroke:#0F766E;
+  --province-label:#6B6B6B;
+  --city-dot:#0F766E;
+  --city-glow:rgba(20,184,166,.45);
+  --city-label:#0A0A0A;
+
+  /* 书架（浅色）*/
+  --shelf-plank:#dcd2bf;
+  --shelf-plank-shadow:rgba(0,0,0,.12);
+}
+
+[data-theme="dark"]{
+  --bg:#0A0A0A; --fg:#FAFAFA;
+  --muted:#9A9A9A; --line:#2A2A2A;
+  --marker:var(--accent-mint); --link:var(--accent-mint);
+
+  /* 居民楼：夜晚深色 + 青绿 */
+  --building-sky-from:#0a0a0a;
+  --building-sky-to:#050505;
+  --building-glow:rgba(20,184,166,.10);
+  --building-body-from:#161616;
+  --building-body-to:#0b0b0b;
+  --building-border:rgba(255,255,255,.07);
+  --building-side:#0d0d0d;
+  --building-top:#242424;
+  --window-off:rgba(255,255,255,.04);
+  --window-off-border:rgba(255,255,255,.06);
+  --window-on-from:#e6fffa;
+  --window-on-mid:#99f6e4;
+  --window-on-to:#14b8a6;
+  --window-on-border:rgba(153,246,228,.9);
+  --window-on-glow:rgba(20,184,166,.75);
+  --window-on-glow-outer:rgba(20,184,166,.4);
+  --ground-glow:rgba(20,184,166,.3);
+  --building-text:#FAFAFA;
+  --building-text-muted:#9A9A9A;	
+  /* 地图（暗色）*/
+  --province-off:#1a1a1a;
+  --province-off-stroke:#2a2a2a;
+  --province-on:#0F766E;
+  --province-on-stroke:#99F6E4;
+  --province-label:#7a7a7a;
+  --city-dot:#99F6E4;
+  --city-glow:rgba(153,246,228,.5);
+  --city-label:#FAFAFA;
+
+  /* 书架（暗色）*/
+  --shelf-plank:#2a2a2a;
+  --shelf-plank-shadow:rgba(0,0,0,.5);
+}
+
+/* ---------- 基础 ---------- */
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);}
+body{
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",
+system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .25s ease-out,color .25s ease-out;
+}
+::selection{background:var(--accent-mint);color:var(--ink-900);}
+a{color:inherit;text-decoration:none;}
+img{max-width:100%;display:block;}
+:focus-visible{outline:2px solid var(--accent-teal);outline-offset:3px;border-radius:2px;}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
+
+/* ---------- 视图切换（首页 / 子页） ---------- */
+.view{display:none;}
+.view.active{display:block;animation:viewIn .4s cubic-bezier(.16,1,.3,1);}
+@keyframes viewIn{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+body{min-height:100vh;}
+
+/* ---------- 首页入口卡片 ---------- */
+.doors{
+  display:grid;grid-template-columns:1fr;gap:18px;
+  padding:56px 24px;
+}
+@media(min-width:768px){
+  .doors{grid-template-columns:repeat(3,1fr);gap:24px;padding:72px 24px;}
+}
+.door{
+  position:relative;
+  display:flex;flex-direction:column;
+  gap:14px;
+  padding:32px 28px 28px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:var(--bg);
+  color:inherit;
+  overflow:hidden;
+  transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s, border-color .35s;
+  box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 10px 30px -18px rgba(0,0,0,.2);
+}
+[data-theme="dark"] .door{
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -18px rgba(0,0,0,.7);
+}
+.door::before{
+  content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--city-glow), transparent 70%);
+  opacity:.5;transition:transform .5s cubic-bezier(.16,1,.3,1);
+}
+.door:hover{
+  transform:translateY(-6px);
+  border-color:var(--marker);
+  box-shadow:0 24px 50px -24px var(--city-glow);
+}
+.door:hover::before{transform:scale(1.4);}
+.door-index{
+  font-family:"SF Mono",Menlo,monospace;font-size:12px;
+  letter-spacing:.2em;color:var(--muted);
+}
+.door-title{
+  font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  font-weight:600;font-size:clamp(1.8rem,3vw,2.4rem);
+  letter-spacing:-.01em;line-height:1.1;
+}
+.door-desc{
+  font-size:14px;line-height:1.8;color:var(--muted);flex:1;
+}
+.door-arrow{
+  font-size:22px;color:var(--marker);
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+}
+.door:hover .door-arrow{transform:translateX(6px);}
+
+/* ---------- 子页返回按钮 ---------- */
+.subpage-head{padding-top:40px;margin-bottom:16px;}
+.view-map .wrap:not(.subpage-head),
+.view-shelf .wrap:not(.subpage-head){padding-bottom:72px;}
+.back-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:14px;color:var(--muted);
+  padding:8px 16px;border:1px solid var(--line);border-radius:99px;
+  margin-bottom:28px;
+  transition:color .2s,border-color .2s,background .2s;
+}
+.back-btn:hover{color:var(--link);border-color:var(--marker);background:var(--city-glow);}
+.back-light{color:var(--building-text-muted);border-color:rgba(0,0,0,.12);}
+[data-theme="dark"] .back-light{border-color:rgba(255,255,255,.15);}
+.back-light:hover{color:var(--building-text);}	
+/* ---------- 导航 ---------- */
+.site-header{
+  position:sticky;top:0;z-index:60;
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  backdrop-filter:blur(16px) saturate(160%);
+  background:rgba(250,250,250,.72);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset, 0 8px 24px -18px rgba(0,0,0,.18);
+}
+[data-theme="dark"] .site-header{
+  background:rgba(10,10,10,.72);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px -18px rgba(0,0,0,.8);
+}
+.nav{display:flex;align-items:center;justify-content:space-between;height:68px;}
+.nav-logo{
+  font-size:20px;font-weight:600;font-family:"Songti SC","SimSun",serif;
+  letter-spacing:.02em;
+}
+.nav-logo span{color:var(--link);}
+.nav ul{display:none;list-style:none;gap:34px;margin:0;padding:0;font-size:14px;align-items:center;}
+@media(min-width:768px){.nav ul{display:flex;}}
+.nav ul a{
+  position:relative;padding-bottom:4px;opacity:.78;
+  transition:opacity .2s,color .2s;
+}
+.nav ul a::after{
+  content:'';position:absolute;left:0;right:100%;bottom:0;height:1px;
+  background:var(--link);transition:right .28s cubic-bezier(.16,1,.3,1);
+}
+.nav ul a:hover{opacity:1;color:var(--link);}
+.nav ul a:hover::after{right:0;}
+.nav ul a.current{opacity:1;color:var(--link);}
+.nav ul a.current::after{right:0;}
+#mobileMenu a.current{color:var(--link);}
+.theme-btn{
+  width:44px;height:44px;border-radius:50%;
+  border:1px solid var(--line);background:transparent;color:inherit;
+  cursor:pointer;font-size:16px;transition:background .2s,border-color .2s,transform .2s;
+}
+.theme-btn:hover{background:var(--line);transform:rotate(-20deg);}
+.menu-btn{display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border:0;background:transparent;color:inherit;
+  font-size:20px;cursor:pointer;}
+@media(min-width:768px){.menu-btn{display:none;}}
+#mobileMenu{display:none;padding:0 24px 16px;margin:0;list-style:none;}
+#mobileMenu.show{display:block;}
+#mobileMenu a{display:block;padding:12px 0;border-bottom:1px solid var(--line);}
+@media(min-width:768px){#mobileMenu{display:none !important;}}	
+/* ---------- Hero ---------- */
+.hero{
+  padding:96px 24px 72px;
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;
+  top:-80px;right:-120px;width:520px;height:520px;
+  background:radial-gradient(circle, var(--city-glow), transparent 65%);
+  opacity:.28;filter:blur(10px);pointer-events:none;
+}
+.hero .kicker{
+  display:inline-flex;align-items:center;gap:14px;
+  font-family:"SF Mono",Menlo,monospace;font-size:12px;
+  text-transform:uppercase;letter-spacing:.32em;color:var(--muted);
+}
+.hero .kicker::before{
+  content:'';width:34px;height:1px;background:var(--marker);
+}
+.hero h1{
+  font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  font-weight:600;letter-spacing:-.02em;line-height:1.02;
+  font-size:clamp(3rem,10vw,8.5rem);
+  margin:.32em 0 .42em;
+  background:linear-gradient(180deg,var(--fg) 55%,var(--muted) 160%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hero h1 span{
+  -webkit-text-fill-color:var(--link);
+}
+.hero p.lead{
+  max-width:38ch;color:var(--muted);font-size:16px;line-height:1.9;
+  margin-left:auto;margin-right:0;
+  padding-left:24px;border-left:1px solid var(--marker);
+}
+@media(min-width:768px){
+  .hero p.lead{margin-left:calc(58% - 24px);}
+}
+hr.sep{
+  border:0;height:1px;margin:0;
+  background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 80%,transparent);
+}
+
+/* ---------- 区块 ---------- */
+.section{padding:72px 24px;}
+.section-head{display:grid;gap:24px;grid-template-columns:1fr;margin-bottom:36px;}
+@media(min-width:768px){
+  .section-head{grid-template-columns:1fr 2fr;align-items:end;}
+}
+.section-head h2{
+  font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  font-weight:600;font-size:clamp(2rem,4vw,3rem);
+  margin:0;letter-spacing:-.01em;
+  display:flex;align-items:baseline;gap:14px;
+}
+.section-head h2::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--marker);
+  box-shadow:0 0 0 4px var(--city-glow);
+  flex-shrink:0;
+}
+.section-head p{color:var(--muted);margin:0;max-width:52ch;line-height:1.85;}
+/* ---------- 地图 ---------- */
+.map-wrap{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.5) inset,
+    0 20px 50px -30px rgba(0,0,0,.25);
+}
+[data-theme="dark"] .map-wrap{
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 20px 50px -30px rgba(0,0,0,.8);
+}
+.map-grid-dot{
+  fill:var(--line);
+  opacity:.5;
+}
+#china-map{
+  width:100%;height:auto;display:block;
+  aspect-ratio:1000 / 720;
+}
+.province{transition:fill .3s ease-out;cursor:default;}
+.province.off{fill:var(--province-off);stroke:var(--province-off-stroke);stroke-width:1;}
+.province.on{fill:var(--province-on);stroke:var(--province-on-stroke);stroke-width:1.5;}
+.province-label{
+  font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:11px;fill:var(--province-label);
+  pointer-events:none;user-select:none;
+}
+.city{cursor:pointer;}
+.city-halo{
+  fill:var(--city-glow);opacity:.55;
+  transition:opacity .25s,transform .25s;
+  transform-origin:center;transform-box:fill-box;
+  animation:pulse 3s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:.35;transform:scale(1);}
+  50%{opacity:.75;transform:scale(1.4);}
+}
+.city-dot{
+  fill:var(--city-dot);stroke:var(--bg);stroke-width:2;
+  transition:transform .2s ease-out;
+  transform-origin:center;transform-box:fill-box;
+}
+.city:hover .city-dot{transform:scale(1.6);}
+.city:hover .city-halo{opacity:1;animation:none;}
+.city:focus-visible .city-dot{transform:scale(1.6);outline:none;}
+.city-label{
+  font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:13px;fill:var(--city-label);font-weight:500;
+  pointer-events:none;user-select:none;
+}
+.legend{
+  display:flex;gap:24px;flex-wrap:wrap;
+  font-size:12px;color:var(--muted);margin-top:18px;
+  align-items:center;
+}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;
+  vertical-align:middle;margin-right:7px;}
+.legend .dot-on{background:var(--province-on);box-shadow:0 0 0 3px var(--city-glow);}
+.legend .dot-off{background:var(--province-off);border:1px solid var(--province-off-stroke);}
+/* ---------- 居民楼 · 加强版假 3D ---------- */
+.building-section {
+  position: relative;
+  overflow: hidden;
+  color: var(--building-text);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, var(--building-glow), transparent 70%),
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(255,255,255,.22), transparent 60%),
+    linear-gradient(180deg, var(--building-sky-from), var(--building-sky-to));
+  padding-top: 96px;
+  transition: background .4s ease-out;
+  border-top:1px solid rgba(0,0,0,.05);
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+[data-theme="dark"] .building-section{
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+[data-theme="dark"] .building-section::before {
+  content: ''; position: absolute; inset: 0;
+  pointer-events: none; opacity: .7;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1px 1px at 78% 12%, rgba(255,255,255,.4), transparent),
+    radial-gradient(1px 1px at 34% 8%, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 62% 24%, rgba(255,255,255,.3), transparent),
+    radial-gradient(1px 1px at 88% 34%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1px 1px at 22% 40%, rgba(255,255,255,.35), transparent);
+}
+:root:not([data-theme="dark"]) .building-section::before {
+  content: ''; position: absolute; inset: 0;
+  pointer-events: none; opacity: .5;
+  background-image:
+    radial-gradient(ellipse 200px 40px at 20% 15%, rgba(255,255,255,.5), transparent 70%),
+    radial-gradient(ellipse 260px 50px at 75% 22%, rgba(255,255,255,.4), transparent 70%);
+}
+.building-head {
+  position: relative; z-index: 2;
+  display: grid; gap: 24px; grid-template-columns: 1fr;
+  margin-bottom: 24px;
+}
+@media (min-width: 768px) {
+  .building-head { grid-template-columns: 1fr 2fr; align-items: end; }
+}
+.building-head h2 {
+  font-family: "Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  font-weight: 600; font-size: clamp(2rem,4vw,3rem);
+  margin: 0; letter-spacing: -.01em;
+  color: var(--building-text);
+  display: flex; align-items: baseline; gap: 14px;
+}
+.building-head h2::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--window-on-mid);
+  box-shadow:0 0 0 4px var(--window-on-glow-outer);
+  flex-shrink:0;
+}
+.building-head p {
+  color: var(--building-text-muted);
+  margin: 0; max-width: 52ch; line-height: 1.85;
+}
+.scene {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 0 120px;
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  position: relative;
+  z-index: 1;
+  min-height: 720px;
+}
+@media (max-width: 640px) {
+  .scene { perspective: 900px; padding: 40px 0 80px; min-height: 520px; }
+}
+
+/* 地面：给居民楼一个落脚的呼吸带 */
+.ground {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 140px;
+  background:
+    linear-gradient(180deg, transparent, var(--ground-glow) 55%, rgba(0,0,0,.12) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.lit-count {
+  position: relative; z-index: 2;
+  padding: 0 24px 28px;
+  font-size: 13px; letter-spacing: .05em;
+  color: var(--building-text-muted);
+}
+.lit-count #litCount { color: var(--building-text); font-weight: 600; }
+.building {
+  --bw: 400px; --bh: 560px;
+  width: var(--bw); height: var(--bh);
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(-15deg) rotateX(2deg);
+  transition: transform 1.4s cubic-bezier(.16,1,.3,1);
+}
+.building:hover { transform: rotateY(-9deg) rotateX(1deg); }
+@media (max-width: 640px) {
+  .building { --bw: 290px; --bh: 420px; }
+}
+
+/* 正面墙 */
+.building-face {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, var(--building-body-from), var(--building-body-to));
+  border: 1px solid var(--building-border);
+  box-shadow:
+    inset 0 0 80px rgba(0,0,0,.10),
+    0 30px 80px rgba(0,0,0,.2);
+  transition: background .4s, box-shadow .4s;
+  pointer-events: auto;
+  z-index: 2;
+}
+[data-theme="dark"] .building-face {
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,.8),
+    0 30px 80px rgba(0,0,0,.6);
+}
+
+/* 侧面厚度（伪元素，不挡点击） */
+.building::after {
+  content: '';
+  position: absolute;
+  top: -14px; right: -26px; bottom: 0;
+  width: 26px;
+  background: linear-gradient(90deg, var(--building-side), rgba(0,0,0,.15));
+  transform: skewY(-6deg);
+  transform-origin: left top;
+  pointer-events: none;
+  z-index: 0;
+  box-shadow: inset -8px 0 20px rgba(0,0,0,.15);
+}
+[data-theme="dark"] .building::after {
+  background: linear-gradient(90deg, #0d0d0d, #040404);
+  box-shadow: inset -8px 0 20px rgba(0,0,0,.7);
+}
+
+/* 顶面厚度 */
+.building::before {
+  content: '';
+  position: absolute;
+  top: -19px; left: -1px; right: -17px;
+  height: 19px;
+  background: linear-gradient(180deg, var(--building-top), var(--building-side));
+  transform: skewX(-26deg);
+  transform-origin: 0 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+[data-theme="dark"] .building::before { 
+  background: linear-gradient(180deg, #242424, #131313);
+}
+
+/* 窗格 */
+.window-grid {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 12px;
+  padding: 24px;
+}
+
+/* 窗户 */
+.window {
+  position: relative;
+  padding: 0;
+  border-radius: 2px;
+  cursor: default;
+  background: var(--window-off);
+  border: 1px solid var(--window-off-border);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.15),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+  transition:
+    background .55s ease-out,
+    box-shadow .55s ease-out,
+    border-color .55s ease-out,
+    transform .25s ease-out;
+}
+.window.on {
+  background: linear-gradient(180deg,
+    var(--window-on-from) 0%,
+    var(--window-on-mid) 30%,
+    var(--window-on-to) 100%);
+  border-color: var(--window-on-border);
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,.2),
+    0 0 12px var(--window-on-glow),
+    0 0 32px var(--window-on-glow-outer),
+    inset 0 0 10px rgba(255,255,255,.35);
+}
+.window.interactive { cursor: pointer; }
+.window.interactive:hover { transform: scale(1.08); z-index: 5; }
+/* ---------- 窗内人影 ---------- */
+.window .silhouette {
+  position: absolute;
+  left: 22%; right: 22%;
+  bottom: 5%;
+  height: 58%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 1.1s ease-out;
+  pointer-events: none;
+  color: rgba(58, 28, 0, .52);
+  z-index: 1;
+  will-change: opacity, transform;
+}
+[data-theme="dark"] .window .silhouette {
+  color: rgba(0, 38, 38, .6);
+}
+.window.on .silhouette {
+  opacity: 1;
+}
+.silhouette svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  animation: sway 9s ease-in-out infinite alternate;
+}
+/* 缓缓侧移，像在窗边踱步 */
+@keyframes sway {
+  0%   { transform: translateX(-3%); }
+  100% { transform: translateX(3%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .silhouette svg { animation: none; }
+}
+
+/* 剪影的随机偏移（用 JS 分配，让每个窗户不一样） */
+.silhouette[data-pos="left"]   { left: 8%;  right: 40%; }
+.silhouette[data-pos="center"] { left: 22%; right: 22%; }
+.silhouette[data-pos="right"]  { left: 40%; right: 8%; }
+/* 装饰元素 */
+.deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* 楼顶水箱 */
+.deco-tank {
+  width: 52px; height: 30px;
+  top: -50px; left: 58%;
+  background: linear-gradient(180deg, #c8c0b0, #948c7c);
+  border-radius: 3px 3px 2px 2px;
+  box-shadow:
+    0 6px 12px rgba(0,0,0,.28),
+    inset 0 -6px 10px rgba(0,0,0,.15),
+    inset 0 2px 0 rgba(255,255,255,.18);
+  transform: skewX(-15deg);
+  transform-origin: 50% 100%;
+}
+[data-theme="dark"] .deco-tank {
+  background: linear-gradient(180deg, #2e2e2e, #1a1a1a);
+  box-shadow:
+    0 6px 12px rgba(0,0,0,.5),
+    inset 0 -6px 10px rgba(0,0,0,.4),
+    inset 0 2px 0 rgba(255,255,255,.05);
+}
+
+/* 天线 */
+.deco-antenna::before,
+.deco-antenna::after {
+  content: '';
+  position: absolute;
+  left: -7px; right: -7px;
+  height: 1.5px;
+  background: rgba(0,0,0,.6);
+  border-radius: 1px;
+}
+.deco-antenna::before { top: 12px; }
+.deco-antenna::after  { top: 28px; }
+[data-theme="dark"] .deco-antenna,
+[data-theme="dark"] .deco-antenna::before,
+[data-theme="dark"] .deco-antenna::after {
+  background: rgba(255,255,255,.4);
+}
+
+/* 竖向管道 */
+.deco-pipe {
+  width: 6px; top: 0; bottom: 0;
+  left: 6%;
+  background: linear-gradient(90deg,
+    rgba(0,0,0,.05),
+    rgba(0,0,0,.32) 40%,
+    rgba(0,0,0,.32) 60%,
+    rgba(0,0,0,.05));
+  border-radius: 3px;
+  opacity: .85;
+}
+[data-theme="dark"] .deco-pipe {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,.04),
+    rgba(255,255,255,.16) 40%,
+    rgba(255,255,255,.16) 60%,
+    rgba(255,255,255,.04));
+}
+
+/* 空调外机 */
+.deco-ac {
+  width: 42px; height: 30px;
+  background: linear-gradient(180deg, #d4ccbc, #a89e8e);
+  border-radius: 2px;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,.25),
+    inset 0 -3px 0 rgba(0,0,0,.10);
+}
+[data-theme="dark"] .deco-ac {
+  background: linear-gradient(180deg, #2e2e2e, #1a1a1a);
+}
+.deco-ac::after {
+  content: '';
+  position: absolute;
+  inset: 6px 9px;
+  border: 1px solid rgba(0,0,0,.20);
+  border-radius: 50%;
+}
+[data-theme="dark"] .deco-ac::after {
+  border-color: rgba(255,255,255,.10);
+}
+.deco-ac-1 { top: 34%; left: -28px; }
+.deco-ac-2 { top: 70%; right: -28px; }
+/* ---------- 书架 ---------- */
+.shelf-wrap{
+  padding:20px 0 12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:var(--shelf-plank) transparent;
+}
+.shelf-wrap::-webkit-scrollbar{height:8px;}
+.shelf-wrap::-webkit-scrollbar-thumb{
+  background:var(--shelf-plank);border-radius:99px;
+}
+.shelf{
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:6px;
+  padding:0 24px 0;
+  border-bottom:9px solid var(--shelf-plank);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.12) inset,
+    0 10px 22px -8px var(--shelf-plank-shadow);
+  min-height:320px;
+  min-width:max-content;
+}
+.book{
+  flex:0 0 auto;
+  width:48px;
+  height:260px;
+  padding:22px 0 18px;
+  border:0;
+  border-radius:2px 2px 0 0;
+  cursor:pointer;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  font-family:"Songti SC","STSong","SimSun",serif;
+  font-size:13px;
+  letter-spacing:.15em;
+  line-height:1;
+  color:var(--book-fg);
+  background:var(--book-bg);
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  transition:transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s;
+  position:relative;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.book::before,.book::after{
+  content:'';position:absolute;left:8px;right:8px;height:1px;
+  background:currentColor;opacity:.35;
+}
+.book::before{top:10px;}
+.book::after{bottom:10px;}
+.book:hover{
+  transform:translateY(-10px) rotate(-1deg);
+  box-shadow:0 16px 28px -10px rgba(0,0,0,.4);
+}
+.book:focus-visible{
+  outline:none;
+  transform:translateY(-10px) rotate(-1deg);
+  box-shadow:0 0 0 2px var(--accent-teal), 0 16px 28px -10px rgba(0,0,0,.4);
+}
+.book[data-tone="0"]{ --book-bg:#1F1F1F; --book-fg:#FAFAFA; }
+.book[data-tone="1"]{ --book-bg:#4A4A4A; --book-fg:#FAFAFA; }
+.book[data-tone="2"]{ --book-bg:#D4D4D4; --book-fg:#0A0A0A; }
+.book[data-tone="3"]{ --book-bg:#14B8A6; --book-fg:#0A0A0A; }
+.book[data-tone="4"]{ --book-bg:#E8E0D0; --book-fg:#0A0A0A; }
+.book[data-tone="5"]{ --book-bg:#0F766E; --book-fg:#FAFAFA; }
+[data-theme="dark"] .book[data-tone="0"]{ --book-bg:#2A2A2A; }
+[data-theme="dark"] .book[data-tone="1"]{ --book-bg:#5A5A5A; }
+[data-theme="dark"] .book[data-tone="2"]{ --book-bg:#3A3A3A; --book-fg:#FAFAFA; }
+[data-theme="dark"] .book[data-tone="4"]{ --book-bg:#3D3830; --book-fg:#FAFAFA; }
+	/* 书架详情卡片 */
+.book-modal{
+  position:fixed;inset:0;z-index:110;
+  background:rgba(10,10,10,.55);
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s ease-out;
+}
+.book-modal.open{opacity:1;pointer-events:auto;}
+.book-card{
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:40px 36px 36px;
+  max-width:520px;width:100%;
+  max-height:80vh;overflow-y:auto;
+  position:relative;
+  transform:translateY(12px);
+  transition:transform .3s cubic-bezier(.16,1,.3,1);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.5) inset,
+    0 30px 80px -20px rgba(0,0,0,.55);
+}
+.book-modal.open .book-card{transform:translateY(0);}
+.book-card-close{
+  position:absolute;top:14px;right:14px;
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--line);background:transparent;color:inherit;
+  cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.book-card-close:hover{background:var(--line);}
+.book-type{
+  font-family:"SF Mono",Menlo,monospace;
+  font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--muted);
+}
+.book-title{
+  font-family:"Songti SC","STSong","SimSun",serif;
+  font-weight:600;font-size:clamp(1.6rem,4vw,2.2rem);
+  margin:10px 0 6px;line-height:1.2;letter-spacing:-.01em;
+}
+.book-author{
+  font-size:14px;color:var(--muted);margin-bottom:4px;
+}
+.book-meta{
+  font-family:"SF Mono",Menlo,monospace;
+  font-size:12px;color:var(--muted);
+  margin-bottom:20px;
+}
+.book-stars{
+  color:var(--accent-teal);
+  font-size:14px;letter-spacing:.05em;margin-bottom:20px;
+}
+.book-note{
+  font-family:"Songti SC","STSong","SimSun",serif;
+  font-size:1.02rem;line-height:1.9;
+  border-left:2px solid var(--marker);
+  padding-left:16px;
+  color:var(--fg);
+}
+.book-note p{margin:0;}
+/* ---------- 关于 ---------- */
+.about{padding:96px 24px;}
+.about-grid{display:grid;gap:32px;grid-template-columns:1fr;}
+@media(min-width:768px){.about-grid{grid-template-columns:1fr 2fr;}}
+.about h2{
+  font-family:"Songti SC","STSong","SimSun",serif;font-weight:600;
+  font-size:clamp(2rem,4vw,3rem);margin:0;
+  display:flex;align-items:baseline;gap:14px;
+}
+.about h2::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--marker);
+  box-shadow:0 0 0 4px var(--city-glow);
+  flex-shrink:0;
+}
+.about p{line-height:2;max-width:65ch;color:var(--fg);}
+.about blockquote.motto{
+  margin:36px 0 0;
+  padding:20px 0 20px 24px;
+  border-left:2px solid var(--marker);
+  font-family:"Songti SC","STSong","SimSun",serif;
+  font-style:italic;font-size:1.08rem;
+  color:var(--muted);max-width:65ch;
+  background:linear-gradient(90deg, var(--city-glow), transparent 70%);
+  border-radius:0 12px 12px 0;
+}
+
+/* ---------- 页脚 ---------- */
+.site-footer{
+  border-top:1px solid var(--line);
+  padding:48px 0;color:var(--muted);font-size:13px;
+  letter-spacing:.04em;
+}
+.site-footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+
+/* ---------- 阅读器 ---------- */
+.reader{
+  position:fixed;inset:0;z-index:100;background:var(--bg);
+  opacity:0;pointer-events:none;
+  transition:opacity .3s cubic-bezier(.16,1,.3,1);
+  overflow-y:auto;
+}
+.reader::before{
+  content:'';position:fixed;top:0;left:0;right:0;height:180px;
+  background:linear-gradient(180deg,var(--city-glow),transparent);
+  opacity:.25;pointer-events:none;
+}
+.reader.open{opacity:1;pointer-events:auto;}
+.reader-inner{
+  max-width:720px;margin:0 auto;padding:80px 24px 120px;
+  transform:translateY(10px);
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.reader.open .reader-inner{transform:translateY(0);}
+.reader-close{
+  position:fixed;top:20px;right:20px;z-index:2;
+  width:44px;height:44px;border-radius:50%;
+  background:var(--bg);border:1px solid var(--line);color:var(--fg);
+  cursor:pointer;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.reader-close:hover{background:var(--line);}
+.reader-meta{
+  font-family:"SF Mono",Menlo,monospace;font-size:12px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+}
+.reader-title{
+  font-family:"Songti SC","STSong","SimSun","Noto Serif SC",serif;
+  font-weight:600;font-size:clamp(2rem,5vw,3.5rem);
+  margin:12px 0 0;line-height:1.15;letter-spacing:-.01em;
+}
+.reader hr{border:0;border-top:1px solid var(--line);margin:32px 0;}
+.prose-read{max-width:65ch;line-height:1.9;font-size:17px;}
+.prose-read p{margin:1.2em 0; text-indent:2em;}
+.prose-read h2{
+  font-family:"Songti SC",serif;font-size:1.4rem;
+  margin:2em 0 .6em;
+}
+.prose-read blockquote{
+  border-left:2px solid var(--marker);
+  padding-left:1.2rem;color:var(--muted);
+  font-style:italic;margin:1.6em 0;
+}
+.prose-read hr{
+  border:0;border-top:1px solid var(--line);
+  margin:2.8em auto;width:40%;
+}
+.prose-read.poem{
+  white-space:pre-wrap;
+  font-family:"Songti SC","STSong","SimSun",serif;
+  line-height:2.1;
+}
+
+/* ---------- 旅行抽屉 ---------- */
+.place-panel{
+  position:fixed;top:0;right:0;bottom:0;
+  width:min(460px,100vw);
+  background:var(--bg);border-left:1px solid var(--line);
+  z-index:90;overflow-y:auto;
+  transform:translateX(100%);
+  transition:transform .38s cubic-bezier(.16,1,.3,1);
+  box-shadow:
+    -1px 0 0 rgba(255,255,255,.4) inset,
+    -24px 0 70px -30px rgba(0,0,0,.28);
+}
+.place-panel.open{transform:translateX(0);}
+@media(max-width:640px){
+  .place-panel{
+top:auto;left:0;bottom:0;width:100%;height:78vh;
+    border-left:0;border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;
+    transform:translateY(100%);
+  }
+  .place-panel.open{transform:translateY(0);}
+  .place-panel::before{
+    content:'';position:absolute;top:8px;left:50%;
+    transform:translateX(-50%);
+    width:36px;height:4px;background:var(--line);border-radius:99px;
+  }
+}
+.place-body{padding:24px;}
+.place-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+.place-title{
+  font-family:"Songti SC",serif;font-weight:600;
+  font-size:1.9rem;margin:0;line-height:1.2;
+}
+.place-meta{
+  font-family:"SF Mono",Menlo,monospace;
+  font-size:12px;color:var(--muted);margin-top:4px;
+}
+.place-close{
+  width:44px;height:44px;flex-shrink:0;
+  border:1px solid var(--line);border-radius:50%;
+  background:transparent;color:inherit;cursor:pointer;font-size:16px;
+}	
+.place-gallery{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;margin-bottom:20px;
+}
+.place-gallery .photo{
+  aspect-ratio:4/3;border-radius:12px;
+  overflow:hidden;position:relative;
+  background:linear-gradient(135deg,#d4d4d4,#e5e5e5);
+  box-shadow:0 6px 16px -8px rgba(0,0,0,.3);
+}
+.place-gallery .photo:first-child{
+  grid-column:1 / -1;aspect-ratio:16/10;
+}
+.place-gallery img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .4s;
+}
+.place-gallery .photo:hover img{transform:scale(1.05);}
+.place-gallery .placeholder{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--muted);
+  background:linear-gradient(135deg,var(--line),transparent);
+}
+.place-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+.tag{
+  font-size:12px;padding:5px 12px;
+  border:1px solid var(--line);
+  border-radius:99px;color:var(--muted);
+}
+.tag.mood{
+  background:var(--accent-mint);color:#0A0A0A;
+  border-color:transparent;font-weight:500;
+}
+
+/* ---------- Toast ---------- */
+.toast{
+  position:fixed;left:50%;top:88px;z-index:200;
+  transform:translate(-50%,-16px);
+  background:rgba(10,10,10,.92);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+  color:#FAFAFA;
+  padding:13px 22px;border-radius:99px;font-size:14px;
+  border:1px solid var(--accent-teal);
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.5);
+  transition:transform .3s cubic-bezier(.16,1,.3,1), opacity .3s ease-out;
+  opacity:0;
+  pointer-events:none;
+  max-width:calc(100vw - 48px);
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.toast.show{transform:translate(-50%,0);opacity:1;}
+
+/* ---------- 响应式：阅读舒适度 ---------- */
+/* 手机：加大基础字号、放宽行高、缩小留白避免拥挤 */
+@media (max-width: 640px){
+  body{font-size:16px;}
+  .wrap{padding:0 24px;}
+  .nav .wrap{padding:0 20px;}
+  .nav{height:60px;}
+  .hero{padding:64px 24px 48px;}
+  .hero h1{font-size:clamp(2.5rem,16vw,4rem);}
+  .hero .kickicker{letter-spacing:.22em;}
+  .hero p.lead{margin-left:0;font-size:15px;padding-left:16px;}
+  .section{padding:48px 24px;}
+  .section-head{grid-template-columns:1fr;gap:14px;margin-bottom:24px;}
+  .section-head h2{font-size:1.9rem;}
+  .section-head p{font-size:15px;line-height:1.8;}
+  .doors{padding:40px 24px;gap:14px;}
+  .door{padding:26px 22px 24px;border-radius:16px;}
+  .subpage-head{padding-top:28px;}
+  /* 地图 */
+  .map-wrap{border-radius:14px;}
+  /* 居民楼 */
+  .building-section{padding-top:64px;}
+  .building-head{grid-template-columns:1fr;gap:14px;}
+  .building-head h2{font-size:1.9rem;}
+  .building-head p{font-size:15px;line-height:1.8;}
+  /* 书架 */
+  .book{width:44px;height:230px;font-size:12px;}
+  /* 关于 */
+  .about{padding:64px 24px;}
+  .about-grid{grid-template-columns:1fr;gap:20px;}
+  .about h2{font-size:1.9rem;}
+  .about p{font-size:15px;line-height:1.9;}
+  .about blockquote.motto{font-size:1rem;padding-left:18px;}
+}
+/* 平板：适中字号与间距 */
+@media (min-width:641px) and (max-width:1024px){
+  .wrap{padding:0 32px;}
+  .doors{grid-template-columns:1fr;gap:16px;padding:56px 32px;}
+  .door{flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px 18px;}
+  .door-index{width:36px;}
+  .door-title{flex:0 0 auto;min-width:120px;}
+  .door-desc{flex:1 1 100%;order:3;}
+  .door-arrow{order:4;}
+}
+
+/* ---------- 阅读器：长文舒适度 ---------- */
+.reader-inner{max-width:680px;}
+@media (max-width:640px){
+  .reader-inner{padding:64px 20px 100px;}
+  .reader-title{font-size:clamp(1.7rem,9vw,2.4rem);}
+  .prose-read{font-size:17px;line-height:2;max-width:none;}
+  .prose-read p{text-indent:2em;margin:1.1em 0;}
+}
+@media (min-width:641px) and (max-width:1024px){
+  .reader-inner{max-width:600px;}
+}
+
+/* ---------- 无障碍 ---------- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    transition-duration:.01ms !important;
+  }
+  .city-halo{animation:none;opacity:.6;}
+}
+</style>
+</head>
+	<body>
+
+<!-- ============ 导航 ============ -->
+<header class="site-header">
+  <div class="wrap nav">
+    <a href="#home" class="nav-logo" data-nav="home">经纬<span>·</span>与字</a>
+    <ul>
+      <li><a href="#map" data-nav="map">旅途</a></li>
+      <li><a href="#building" data-nav="building">文字</a></li>
+      <li><a href="#shelf" data-nav="shelf">所见</a></li>
+      <li>
+        <button id="themeBtn" class="theme-btn" aria-label="切换主题">
+          <span id="themeIcon">◐</span>
+        </button>
+      </li>
+    </ul>
+    <button id="mobileMenuBtn" class="menu-btn" aria-label="打开菜单">☰</button>
+  </div>
+  <ul id="mobileMenu" aria-label="移动菜单">
+    <li><a href="#home" data-nav="home">首页</a></li>
+    <li><a href="#map" data-nav="map">旅途</a></li>
+    <li><a href="#building" data-nav="building">文字</a></li>
+    <li><a href="#shelf" data-nav="shelf">所见</a></li>
+    <li><a href="#" id="mobileThemeBtn">切换主题</a></li>
+  </ul>
+</header>
+
+<!-- ============ 首页 ============ -->
+<section id="home" class="view view-home active" data-view="home">
+  <div class="wrap hero">
+    <p class="kicker">Meridian &amp; Ink</p>
+    <h1>经纬<span>·</span>与字</h1>
+    <p class="lead">在坐标与句子之间游走。这里存放着我的旅行地图，一栋住着故事的居民楼，和一排读过的书。</p>
+  </div>
+
+  <hr class="sep" />
+
+  <div class="wrap doors">
+    <a href="#map" class="door door-journey" data-nav="map">
+      <span class="door-index">01</span>
+      <span class="door-title">旅途</span>
+      <span class="door-desc">青绿色标记着我走过的路，点击城市圆点，翻看照片与手记。</span>
+      <span class="door-arrow">→</span>
+    </a>
+    <a href="#building" class="door door-text" data-nav="building">
+      <span class="door-index">02</span>
+      <span class="door-title">文字</span>
+      <span class="door-desc">一栋住着故事的居民楼，亮灯的窗里有人在家，敲敲门，进去读一读他的人生吧。</span>
+      <span class="door-arrow">→</span>
+    </a>
+    <a href="#shelf" class="door door-seen" data-nav="shelf">
+      <span class="door-index">03</span>
+      <span class="door-title">所见</span>
+      <span class="door-desc">一排读过的书、看过的电影，点击书脊翻开一眼。</span>
+      <span class="door-arrow">→</span>
+    </a>
+  </div>
+
+  <hr class="sep" />
+
+  <!-- 关于：合并到首页正下方 -->
+  <section id="about" class="wrap about">
+    <div class="about-grid">
+      <h2>关于</h2>
+      <div>
+        <p>你好，这个网站是我的一间屋子，即使有点混乱，但的确是对我而言较幸福的记忆。</p>
+        <p>地图上的每一个点，是我曾身处之地；居民楼的每一扇窗，是我创作的文；书架上的每一本书，是我欣赏的文影。</p>
+        <blockquote class="motto">I choose not to choose a human life; I choose a life that is alive.</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="wrap">© 经纬与字 · Meridian &amp; Ink</div>
+  </footer>
+</section>
+
+<!-- ============ 旅途（原地图） ============ -->
+<section id="map" class="view view-map" data-view="map">
+  <div class="wrap section subpage-head">
+    <a href="#home" class="back-btn" data-nav="home">← 返回</a>
+    <div class="section-head">
+      <h2>旅途</h2>
+      <p>青绿色的省份，是我去过的地方。点击城市圆点，可以打开那里的照片、日期与手记。</p>
+    </div>
+  </div>
+  <div class="wrap">
+  <div class="map-wrap">
+<svg id="china-map" viewBox="0 0 1000 720"
+     preserveAspectRatio="xMidYMid meet"
+     role="img"
+     aria-label="中国旅行地图，青绿圆点表示去过的省份">
+  <defs>
+    <pattern id="dotGrid" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle class="map-grid-dot" cx="2" cy="2" r="1.2"></circle>
+    </pattern>
+  </defs>
+  <rect x="0" y="0" width="1000" height="720" fill="url(#dotGrid)"></rect>
+  <g id="province-layer"></g>
+  <g id="province-label-layer"></g>
+  <g id="city-layer"></g>
+</svg>
+  </div>
+  <div class="legend">
+    <span><i class="dot-on"></i>已去过</span>
+    <span><i class="dot-off"></i>待出发</span>
+    <span>· 点击城市圆点查看旅行记录</span>
+  </div>
+  </div>
+</section>
+<!-- ============ 文字（原居民楼） ============ -->
+<section id="building" class="building-section view view-building" data-view="building">
+  <div class="wrap subpage-head">
+    <a href="#home" class="back-btn back-light" data-nav="home">← 返回</a>
+  </div>
+  <div class="wrap building-head">
+    <h2>文字</h2>
+    <p>这是一栋居民楼。每扇亮着的窗户里，故事的主角此刻在家。没亮的窗户里，他大概出了远门。点击亮着的窗，推门进去读一读。</p>
+  </div>
+  <div class="scene">
+    <div class="building" id="buildingRoot">
+      <div class="building-face">
+        <div class="window-grid" id="windowGrid" role="group"
+             aria-label="居民楼窗户，点击亮灯窗户进入故事"></div>
+      </div>
+      <span class="deco deco-tank" aria-hidden="true"></span>
+      <span class="deco deco-antenna" aria-hidden="true"></span>
+      <span class="deco deco-pipe" aria-hidden="true"></span>
+      <span class="deco deco-ac deco-ac-1" aria-hidden="true"></span>
+      <span class="deco deco-ac deco-ac-2" aria-hidden="true"></span>
+    </div>
+  </div>
+  <div class="ground"></div>
+  <div class="wrap lit-count">
+    <span id="litCount">— 扇窗亮着</span> · 每隔一段时间会有人回家或出门
+  </div>
+</section>
+
+<!-- ============ 书架 ============ -->
+<section id="shelf" class="view view-shelf" data-view="shelf">
+  <div class="wrap section subpage-head">
+    <a href="#home" class="back-btn" data-nav="home">← 返回</a>
+    <div class="section-head">
+      <h2>所见</h2>
+      <p>一排读过的书、看过的电影，点击书脊，翻开看一眼。</p>
+    </div>
+  </div>
+  <div class="wrap">
+  <div class="shelf-wrap">
+    <div class="shelf" id="shelfRow" role="list"
+         aria-label="读过的书、看过的电影"></div>
+  </div>
+  </div>
+</section>
+
+	<!-- ============ 阅读器 ============ -->
+<div class="reader" id="reader" role="dialog" aria-modal="true"
+     aria-hidden="true" aria-labelledby="readerTitle">
+  <button class="reader-close" id="readerClose" aria-label="关闭阅读">✕</button>
+  <div class="reader-inner">
+    <p class="reader-meta">
+      <span id="readerType"></span> · <span id="readerDate"></span>
+    </p>
+    <h1 id="readerTitle" class="reader-title"></h1>
+    <hr />
+    <article id="readerBody" class="prose-read"></article>
+  </div>
+</div>
+
+<!-- ============ 书架卡片 ============ -->
+<div class="book-modal" id="bookModal" role="dialog" aria-modal="true"
+     aria-hidden="true" aria-labelledby="bookTitle">
+  <div class="book-card">
+    <button class="book-card-close" id="bookClose" aria-label="关闭">✕</button>
+    <p class="book-type" id="bookType"></p>
+    <h2 class="book-title" id="bookTitle"></h2>
+    <p class="book-author" id="bookAuthor"></p>
+    <p class="book-meta" id="bookMeta"></p>
+    <p class="book-stars" id="bookStars"></p>
+    <div class="book-note" id="bookNote"></div>
+  </div>
+</div>
+
+<!-- ============ 旅行抽屉 ============ -->
+<aside class="place-panel" id="placePanel" role="dialog" aria-modal="true"
+       aria-hidden="true" aria-labelledby="placeTitle">
+  <div class="place-body">
+    <div class="place-head">
+      <div>
+        <h2 id="placeTitle" class="place-title"></h2>
+        <p class="place-meta" id="placeMeta"></p>
+      </div>
+      <button id="placeClose" class="place-close" aria-label="关闭">✕</button>
+    </div>
+    <div class="place-gallery" id="placeGallery"></div>
+    <div class="prose-read" id="placeStory"></div>
+    <div class="place-tags" id="placeTags"></div>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="data/places.js" defer></script>
+<script src="data/stories.js" defer></script>
+<script src="data/books.js" defer></script>
+
+<script>
+"use strict";
+/* ============================================================
+   1. 主题切换
+   ============================================================ */
+(function initTheme(){
+  try{
+    var saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    var icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = saved === 'light' ? '◐' : '◑';
+  }catch(e){}
+})();
+
+function toggleTheme(){
+  var root = document.documentElement;
+  var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  root.setAttribute('data-theme', next);
+  try{ localStorage.setItem('theme', next); }catch(e){}
+  var icon = document.getElementById('themeIcon');
+  if (icon) icon.textContent = next === 'light' ? '◐' : '◑';
+}
+
+document.addEventListener('click', function(e){
+  if (e.target.closest('#themeBtn')) toggleTheme();
+  else if (e.target.closest('#mobileThemeBtn')){ e.preventDefault(); toggleTheme(); }
+});
+
+/* ============================================================
+   2. 移动菜单
+   ============================================================ */
+(function(){
+  var btn = document.getElementById('mobileMenuBtn');
+  var menu = document.getElementById('mobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(){ menu.classList.toggle('show'); });
+  menu.addEventListener('click', function(e){
+    if (e.target.tagName === 'A') menu.classList.remove('show');
+  });
+})();
+
+/* ============================================================
+   3. Toast
+   ============================================================ */
+var _toastTimer;
+function toast(msg){
+  var t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+/* ============================================================
+   4. 自动排版（纯文本 → HTML）
+   ============================================================ */
+function renderContent(text, type){
+  if (!text) return '';
+  text = text.trim();
+  if (/<\/p>|<\/h2>|<\/blockquote>/i.test(text)) return text;
+  if (type === '诗歌') return text;
+
+  // 先按空行切成「节」
+  var sections = text.split(/\n\s*\n+/);
+  var html = '';
+  for (var i = 0; i < sections.length; i++){
+    if (i > 0) html += '<hr />';
+    var sec = sections[i].trim();
+    if (!sec) continue;
+    // 节内按换行切成「段」
+    var lines = sec.split(/\n+/);
+    for (var j = 0; j < lines.length; j++){
+      var b = lines[j].trim();
+      if (!b) continue;
+      if (b.charAt(0) === '#'){
+        html += '<h2>' + b.replace(/^#+\s*/, '') + '</h2>';
+      } else if (b.charAt(0) === '>'){
+        html += '<blockquote>' + b.replace(/^>\s*/gm, '') + '</blockquote>';
+      } else if (/^-{3,}$/.test(b)){
+        html += '<hr />';
+      } else {
+        html += '<p>' + b + '</p>';
+      }
+    }
+  }
+  return html;
+}
+
+/* ============================================================
+   数据已拆分到 data/places.js / stories.js / books.js
+   通过主 <script> 之前的三个 <script src> 加载
+   ============================================================ */
+var SVG_NS = 'http://www.w3.org/2000/svg';
+
+var PROVINCES = [
+  { name:'新疆',   lng:85.0,  lat:41.0,  area:166.00 },
+  { name:'西藏',   lng:88.5,  lat:31.5,  area:122.80 },
+  { name:'内蒙古', lng:111.5, lat:43.0,  area:118.30 },
+  { name:'青海',   lng:96.0,  lat:35.5,  area:72.20  },
+  { name:'四川',   lng:102.5, lat:30.5,  area:48.60  },
+  { name:'黑龙江', lng:128.0, lat:47.5,  area:47.30  },
+  { name:'甘肃',   lng:100.5, lat:38.5,  area:45.40  },
+  { name:'云南',   lng:101.5, lat:25.0,  area:39.40  },
+  { name:'广西',   lng:108.5, lat:23.5,  area:23.80  },
+  { name:'湖南',   lng:111.5, lat:27.5,  area:21.20  },
+  { name:'陕西',   lng:109.0, lat:35.5,  area:20.60  },
+  { name:'河北',   lng:115.5, lat:39.0,  area:18.80  },
+  { name:'吉林',   lng:126.0, lat:43.5,  area:18.70  },
+  { name:'湖北',   lng:112.5, lat:31.0,  area:18.60  },
+  { name:'广东',   lng:113.5, lat:23.5,  area:18.00  },
+  { name:'贵州',   lng:106.5, lat:26.5,  area:17.60  },
+  { name:'河南',   lng:113.5, lat:34.0,  area:16.70  },
+  { name:'江西',   lng:115.5, lat:27.5,  area:16.70  },
+  { name:'山东',   lng:118.0, lat:36.5,  area:15.80  },
+  { name:'山西',   lng:112.5, lat:37.5,  area:15.70  },
+  { name:'辽宁',   lng:123.0, lat:41.5,  area:14.80  },
+  { name:'安徽',   lng:117.0, lat:31.5,  area:14.00  },
+  { name:'福建',   lng:118.0, lat:26.0,  area:12.40  },
+  { name:'江苏',   lng:119.5, lat:33.0,  area:10.70  },
+  { name:'浙江',   lng:120.5, lat:29.5,  area:10.20  },
+  { name:'重庆',   lng:107.5, lat:30.0,  area:8.20   },
+  { name:'宁夏',   lng:106.0, lat:37.5,  area:6.60   },
+  { name:'台湾',   lng:121.0, lat:23.7,  area:3.60   },
+  { name:'海南',   lng:109.7, lat:19.2,  area:3.50   },
+  { name:'北京',   lng:116.4, lat:40.0,  area:1.64   },
+  { name:'天津',   lng:117.2, lat:39.2,  area:1.19   },
+  { name:'上海',   lng:121.5, lat:31.2,  area:0.63   },
+  { name:'香港',   lng:114.35, lat:22.3, area:0.11 },
+  { name:'澳门',   lng:113.35, lat:22.1, area:0.0033 }
+];
+
+var MAP_GEO = { lngMin:73, lngMax:136, latMin:17, latMax:54 };
+var MAP_W = 1000, MAP_H = 720, MAP_PAD_X = 20, MAP_PAD_Y = 20;
+var COS_MID = Math.cos(35.5 * Math.PI / 180);
+
+var project = (function(){
+  var spanX = (MAP_GEO.lngMax - MAP_GEO.lngMin) * COS_MID;
+  var spanY = (MAP_GEO.latMax - MAP_GEO.latMin);
+  var scale = Math.min(
+    (MAP_W - MAP_PAD_X * 2) / spanX,
+    (MAP_H - MAP_PAD_Y * 2) / spanY
+  );
+  var offX = (MAP_W - spanX * scale) / 2;
+  var offY = (MAP_H - spanY * scale) / 2;
+
+  return function(lng, lat){
+    return [
+      offX + (lng - MAP_GEO.lngMin) * COS_MID * scale,
+      offY + (MAP_GEO.latMax - lat) * scale
+    ];
+  };
+})();
+
+function areaRadius(area){
+  var r = 10 + 35 * Math.pow(area / 166, 0.35);
+  return Math.max(11, r);
+}
+
+function renderMap(){
+  var provLayer  = document.getElementById('province-layer');
+  var labelLayer = document.getElementById('province-label-layer');
+  var cityLayer  = document.getElementById('city-layer');
+  if (!provLayer || !labelLayer || !cityLayer) return;
+
+  [provLayer, labelLayer, cityLayer].forEach(function(g){
+    while (g.firstChild) g.removeChild(g.firstChild);
+  });
+
+  var visited = {};
+  PLACES.forEach(function(p){ if (p.province) visited[p.province] = true; });
+
+  var items = PROVINCES.map(function(p){
+    var xy = project(p.lng, p.lat);
+    var r  = (p.r != null) ? p.r : areaRadius(p.area);
+    return { p:p, x:xy[0], y:xy[1], r:r, on:!!visited[p.name] };
+  });
+
+  var ordered = items.filter(function(it){ return !it.on; })
+                     .concat(items.filter(function(it){ return it.on; }));
+
+  ordered.forEach(function(it){
+    var c = document.createElementNS(SVG_NS, 'circle');
+    c.setAttribute('cx', it.x.toFixed(1));
+    c.setAttribute('cy', it.y.toFixed(1));
+    c.setAttribute('r',  it.r.toFixed(1));
+    c.setAttribute('class', 'province ' + (it.on ? 'on' : 'off'));
+    provLayer.appendChild(c);
+  });
+
+  items.forEach(function(it){
+    var t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', it.x.toFixed(1));
+    t.setAttribute('y', it.y.toFixed(1));
+    t.setAttribute('dy', '0.35em');
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('class', 'province-label');
+    t.setAttribute('font-size',
+      Math.max(8, Math.min(14, it.r * 0.42)).toFixed(1));
+    t.textContent = it.p.name;
+    labelLayer.appendChild(t);
+  });
+
+  PLACES.forEach(function(p){
+    if (!p.coord) return;
+    var xy = project(p.coord[0], p.coord[1]);
+
+    var g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'city');
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', '查看 ' + p.city + ' 的旅行记录');
+
+    var halo = document.createElementNS(SVG_NS, 'circle');
+    halo.setAttribute('cx', xy[0].toFixed(1));
+    halo.setAttribute('cy', xy[1].toFixed(1));
+    halo.setAttribute('r', '12');
+    halo.setAttribute('class', 'city-halo');
+    g.appendChild(halo);
+
+    var dot = document.createElementNS(SVG_NS, 'circle');
+    dot.setAttribute('cx', xy[0].toFixed(1));
+    dot.setAttribute('cy', xy[1].toFixed(1));
+    dot.setAttribute('r', '6.5');
+    dot.setAttribute('class', 'city-dot');
+    g.appendChild(dot);
+
+    var label = document.createElementNS(SVG_NS, 'text');
+    label.setAttribute('x', (xy[0] + 11).toFixed(1));
+    label.setAttribute('y', xy[1].toFixed(1));
+    label.setAttribute('dy', '0.35em');
+    label.setAttribute('class', 'city-label');
+    label.textContent = p.city;
+    g.appendChild(label);
+
+    g.addEventListener('click', function(){ openPlace(p); });
+    g.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        openPlace(p);
+      }
+    });
+
+    cityLayer.appendChild(g);
+  });
+}
+/* ============================================================
+   9. 旅行抽屉
+   ============================================================ */
+var placePanel = document.getElementById('placePanel');
+
+function openPlace(p){
+  document.getElementById('placeTitle').textContent = p.city;
+  document.getElementById('placeMeta').textContent =
+    (p.province || '') + ' · ' + (p.date || '') +
+    (p.coord ? ' · ' + p.coord[1].toFixed(2) + '°N, ' + p.coord[0].toFixed(2) + '°E' : '');
+
+  var gallery = document.getElementById('placeGallery');
+  var imgs = (p.images && p.images.length) ? p.images : [];
+  if (imgs.length === 0){
+    gallery.innerHTML = '<div class="photo"><div class="placeholder">还没有放照片</div></div>';
+  } else {
+    gallery.innerHTML = imgs.map(function(src, i){
+      return '<div class="photo">' +
+        '<img src="' + src + '" alt="' + p.city + ' 照片 ' + (i+1) + '" loading="lazy" ' +
+        'onerror="this.parentNode.innerHTML=\'<div class=&quot;placeholder&quot;>图片未找到<br>' + src + '</div>\'">' +
+        '</div>';
+    }).join('');
+  }
+
+  document.getElementById('placeStory').innerHTML = '<p>' + (p.story || '') + '</p>';
+
+  var tagHtml = (p.tags || []).map(function(t){
+    return '<span class="tag">#' + t + '</span>';
+  }).join('');
+  if (p.mood) tagHtml += '<span class="tag mood">' + p.mood + '</span>';
+  document.getElementById('placeTags').innerHTML = tagHtml;
+
+  placePanel.classList.add('open');
+  placePanel.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('placeClose').focus();
+}
+
+function closePlace(){
+  placePanel.classList.remove('open');
+  placePanel.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+document.getElementById('placeClose').addEventListener('click', closePlace);
+/* ============================================================
+   10. 居民楼
+   ============================================================ */
+var COLS = 6, ROWS = 5, TOTAL = COLS * ROWS;
+var winEls = [];
+// 已填文章的窗户位置（index 0-29），其余为待填充空槽
+var SLOTS = [1,4,7,9,12,15,17,20,22,25,27,29];
+/* ---------- 人影剪影 SVG ---------- */
+function silhouetteSVG(pose){
+  // 四种姿态，都是"头 + 肩"轮廓
+  // 用贝塞尔曲线让头肩过渡自然，脖子处不完全收窄
+  var shapes = {
+    // 正面：头居中，肩向两侧展开
+    front:
+      '<ellipse cx="50" cy="30" rx="9.5" ry="12"/>' +
+      '<path d="M 50 41 ' +
+        'C 42 41, 34 45, 30 54 ' +
+        'C 26 64, 25 80, 25 100 ' +
+        'L 75 100 ' +
+        'C 75 80, 74 64, 70 54 ' +
+        'C 66 45, 58 41, 50 41 Z"/>',
+    // 侧身：头略偏，肩一边高一边低
+    side:
+      '<ellipse cx="55" cy="30" rx="9" ry="11.5"/>' +
+      '<path d="M 55 40 ' +
+        'C 47 40, 38 44, 33 53 ' +
+        'C 29 62, 27 78, 27 100 ' +
+        'L 78 100 ' +
+        'C 78 78, 77 62, 73 52 ' +
+        'C 69 43, 64 40, 55 40 Z"/>',
+    // 坐着：整体压低
+    seated:
+      '<ellipse cx="44" cy="48" rx="9.5" ry="12"/>' +
+      '<path d="M 44 59 ' +
+        'C 36 59, 27 63, 23 72 ' +
+        'C 20 81, 20 92, 20 100 ' +
+        'L 76 100 ' +
+        'C 76 88, 74 76, 70 67 ' +
+        'C 65 60, 55 59, 44 59 Z"/>',
+    // 微侧头：头略倾斜，肩不对称
+    tilted:
+      '<ellipse cx="52" cy="31" rx="9.5" ry="12" transform="rotate(-7 52 31)"/>' +
+      '<path d="M 52 42 ' +
+        'C 44 42, 35 46, 30 55 ' +
+        'C 26 64, 25 80, 25 100 ' +
+        'L 76 100 ' +
+        'C 76 80, 75 64, 71 54 ' +
+        'C 67 45, 60 42, 52 42 Z"/>'
+  };
+  var inner = shapes[pose] || shapes.front;
+  return '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMax meet" aria-hidden="true">' +
+    '<g fill="currentColor">' + inner + '</g></svg>';
+}
+
+function randomPose(){
+  var pool = ['front','front','front','side','side','seated','tilted'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function randomPos(){
+  var pool = ['center','center','left','right'];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+function initBuilding(){
+  var grid = document.getElementById('windowGrid');
+  if (!grid) return;
+
+  // index → 文章（仅 SLOTS 有文章，其余空槽待填）
+  var slotToStory = {};
+  STORIES.forEach(function(s, i){
+    if (i < SLOTS.length) slotToStory[SLOTS[i]] = s;
+  });
+
+  for (var i = 0; i < TOTAL; i++){
+    var btn = document.createElement('button');
+    btn.className = 'window interactive';
+    btn.dataset.index = i;
+    btn.type = 'button';
+
+    var story = slotToStory[i];
+    if (story){
+      btn.dataset.storyId = story.id;
+      btn.title = story.title + ' · ' + story.type;
+      btn.setAttribute('aria-label', '进入故事：' + story.title);
+    } else {
+      btn.dataset.empty = '1';
+      btn.title = '待填写';
+      btn.setAttribute('aria-label', '这扇窗还没有住客');
+    }
+
+// 给这扇窗挂一个剪影
+var sil = document.createElement('span');
+sil.className = 'silhouette';
+sil.setAttribute('data-pos', randomPos());
+sil.innerHTML = silhouetteSVG(randomPose());
+btn.appendChild(sil);
+
+    grid.appendChild(btn);
+    winEls.push(btn);
+  }
+
+  refreshWindows();
+  updateLitCount();
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce){
+    setInterval(function(){
+      refreshWindows();
+      updateLitCount();
+    }, 3200);
+  }
+
+  grid.addEventListener('click', function(e){
+    var w = e.target.closest('.window');
+    if (!w) return;
+    var id = w.dataset.storyId;
+    // 空槽：还没住客，无论亮灭都提示
+    if (w.dataset.empty){
+      toast('这家似乎还没有住客入住。');
+      return;
+    }
+    // 有文章，但灯灭：出门了
+    if (!w.classList.contains('on')){
+      toast('这户人家出门了，晚点再来看看吧。');
+      return;
+    }
+    // 有文章且亮灯：打开阅读器
+    openStory(id);
+  });
+}
+function refreshWindows(){
+  winEls.forEach(function(w){
+    // 空槽（无文章）窗：永远灭灯
+    if (w.dataset.empty){ w.classList.remove('on'); return; }
+    var prob = 0.72;
+    w.classList.toggle('on', Math.random() < prob);
+  });
+  var storyWins = winEls.filter(function(w){ return w.dataset.storyId; });
+  var litStory = storyWins.filter(function(w){ return w.classList.contains('on'); });
+  if (litStory.length < Math.ceil(storyWins.length * 0.5)){
+    storyWins.forEach(function(w){
+      if (!w.classList.contains('on') && Math.random() < 0.6) w.classList.add('on');
+    });
+  }
+}
+
+function updateLitCount(){
+  var n = winEls.filter(function(w){ return w.classList.contains('on'); }).length;
+  var el = document.getElementById('litCount');
+  if (el) el.textContent = n + ' 扇窗亮着';
+}
+
+/* ============================================================
+   11. 阅读器
+   ============================================================ */
+var reader = document.getElementById('reader');
+
+function openStory(id){
+  var s = null;
+  for (var i = 0; i < STORIES.length; i++){
+    if (STORIES[i].id === id){ s = STORIES[i]; break; }
+  }
+  if (!s) return;
+
+  document.getElementById('readerType').textContent = s.type || '';
+  document.getElementById('readerDate').textContent = s.date || '';
+  document.getElementById('readerTitle').textContent = s.title || '';
+
+  var body = document.getElementById('readerBody');
+  body.className = 'prose-read' + (s.type === '诗歌' ? ' poem' : '');
+  body.innerHTML = renderContent(s.content, s.type);
+
+  reader.classList.add('open');
+  reader.setAttribute('aria-hidden', 'false');
+  reader.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ document.getElementById('readerClose').focus(); }, 50);
+}function closeReader(){
+  reader.classList.remove('open');
+  reader.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+document.getElementById('readerClose').addEventListener('click', closeReader);
+
+/* ============================================================
+   12. 书架
+   ============================================================ */
+var bookModal = document.getElementById('bookModal');
+
+function initShelf(){
+  var row = document.getElementById('shelfRow');
+  if (!row) return;
+
+  BOOKS.forEach(function(b, i){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'book';
+    btn.setAttribute('data-tone', String((b.tone != null ? b.tone : i) % 6));
+    btn.setAttribute('role', 'listitem');
+    btn.setAttribute('aria-label', b.type + '：' + b.title + '，' + b.author);
+    btn.title = b.title;
+    btn.textContent = b.title;
+    btn.addEventListener('click', function(){ openBook(b); });
+    row.appendChild(btn);
+  });
+}
+
+function openBook(b){
+  document.getElementById('bookType').textContent = (b.type || '书') + ' · ' + (b.year || '');
+  document.getElementById('bookTitle').textContent = b.title || '';
+  document.getElementById('bookAuthor').textContent = b.author || '';
+  document.getElementById('bookMeta').textContent = b.year ? ('— ' + b.year) : '';
+
+  // 评分用文字表示（已移除表情符号）
+  document.getElementById('bookStars').textContent =
+    b.rating ? ('评分 ' + b.rating + ' / 5') : '';
+
+  var noteEl = document.getElementById('bookNote');
+  noteEl.innerHTML = '<p>' + (b.note || '') + '</p>';
+
+  bookModal.classList.add('open');
+  bookModal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ document.getElementById('bookClose').focus(); }, 50);
+}
+
+function closeBook(){
+  bookModal.classList.remove('open');
+  bookModal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+document.getElementById('bookClose').addEventListener('click', closeBook);
+bookModal.addEventListener('click', function(e){
+  if (e.target === bookModal) closeBook();
+});
+/* ============================================================
+   13. ESC 关闭
+   ============================================================ */
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape') return;
+  if (reader.classList.contains('open')) closeReader();
+  else if (placePanel.classList.contains('open')) closePlace();
+  else if (bookModal.classList.contains('open')) closeBook();
+});
+
+/* ============================================================
+   14. 视图路由（首页 / 旅途 / 文字 / 所见）
+   ============================================================ */
+var VALID_VIEWS = { home:1, map:1, building:1, shelf:1 };
+
+function currentViewFromHash(){
+  var h = (location.hash || '').replace(/^#\/?/, '');
+  return VALID_VIEWS[h] ? h : 'home';
+}
+
+function activateView(name){
+  document.querySelectorAll('.view').forEach(function(v){
+    v.classList.toggle('active', v.getAttribute('data-view') === name);
+  });
+  // 同步高亮导航
+  document.querySelectorAll('.nav [data-nav], #mobileMenu [data-nav]').forEach(function(a){
+    var isActive = a.getAttribute('data-nav') === name;
+    a.classList.toggle('current', isActive);
+  });
+  // 关闭移动菜单
+  var mm = document.getElementById('mobileMenu');
+  if (mm) mm.classList.remove('show');
+  // 切视图时强制回到顶部（多重保险，避免 hash 锚点残留滚动位置）
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+}
+
+function go(name){
+  if (!VALID_VIEWS[name]) name = 'home';
+  if (location.hash !== '#' + name){
+    location.hash = name;       // 触发 hashchange → route
+  } else {
+    activateView(name);         // 已在同一 hash，手动刷新视图
+  }
+  // 再次强制回顶，覆盖浏览器 hash 滚动行为
+  requestAnimationFrame(function(){
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  });
+}
+
+function route(){
+  activateView(currentViewFromHash());
+  requestAnimationFrame(function(){ window.scrollTo(0,0); });
+}
+
+window.addEventListener('hashchange', route);
+
+// 拦截站内锚点跳转：阻止默认滚动到锚点，交给 go() 处理
+document.addEventListener('click', function(e){
+  var a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  var href = a.getAttribute('href');
+  if (!href || href === '#') return; // 移动端主题按钮等占位链接
+  e.preventDefault();
+  var name = href.replace(/^#\/?/, '');
+  go(name);
+});
+
+/* ============================================================
+   15. 启动
+   ============================================================ */
+function boot(){
+  // 容错：数据文件未加载成功时兜底为空数组，避免报错中断后续渲染
+  window.PLACES  = window.PLACES  || [];
+  window.STORIES = window.STORIES || [];
+  window.BOOKS   = window.BOOKS   || [];
+
+  [renderMap, initBuilding, initShelf].forEach(function(fn){
+    try { fn(); } catch(e){ if (window.console) console.error('[boot]', fn.name, e); }
+  });
+  route();
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
